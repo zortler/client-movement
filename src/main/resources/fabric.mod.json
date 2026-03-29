@@ -10,7 +10,7 @@
 	"contact": {
 		"sources": "https://github.com/zortler/client-movement"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/clientmovement/icon.png",
 	"environment": "client",
 	"entrypoints": {
