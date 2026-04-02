@@ -13,11 +13,6 @@
 	"license": "MIT",
 	"icon": "assets/clientmovement/icon.png",
 	"environment": "client",
-	"entrypoints": {
-		"client": [
-			"ch.zorty.ClientMovementClient"
-		]
-	},
 	"mixins": [
 		"clientmovement.mixins.json",
 		{
