@@ -20,7 +20,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 public class AttributeMixin {
 
     @Unique
-    private AttributeModifier SPRINTING_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("sprinting"), 0.30000001192092896, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+    private final AttributeModifier SPRINTING_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("sprinting"), 0.3F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     @Inject(
             method = "handleUpdateAttributes(Lnet/minecraft/network/protocol/game/ClientboundUpdateAttributesPacket;)V",

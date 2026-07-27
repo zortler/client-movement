@@ -1,9 +1,9 @@
 package ch.zorty.mixin.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SynchedEntityData.class)
 public class MetadataMixin {
 
-	@Shadow
+	@Final
+    @Shadow
 	private SyncedDataHolder entity;
 
 	@Inject(method = "assignValue", at = @At("HEAD"), cancellable = true)
