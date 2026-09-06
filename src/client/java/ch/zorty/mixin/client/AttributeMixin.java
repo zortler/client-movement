@@ -14,6 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+
+import java.util.ArrayList;
 
 
 @Mixin(ClientPacketListener.class)
@@ -32,7 +35,7 @@ public class AttributeMixin {
     private void beforeAddTransientModifiers(ClientboundUpdateAttributesPacket packet, CallbackInfo ci,
                                              @Local Entity entity,
                                              @Local AttributeInstance instance,
-                                             @Local ClientboundUpdateAttributesPacket.AttributeSnapshot attribute) {
+                                             @Local LocalRef<ClientboundUpdateAttributesPacket.AttributeSnapshot> attribute) {
         Minecraft mc = Minecraft.getInstance();
 
         // Check if client = entity and only edit movement_speed attributes
@@ -41,8 +44,13 @@ public class AttributeMixin {
         if (instance.getAttribute() != Attributes.MOVEMENT_SPEED) return;
 
         boolean sprint = instance.hasModifier(Identifier.withDefaultNamespace("sprinting"));
-        attribute.modifiers().removeIf(modifier -> modifier.is(Identifier.withDefaultNamespace("sprinting")));
-        if(sprint) { attribute.modifiers().add(SPRINTING_MODIFIER); }
+        // Integrated-server packets can contain immutable modifiers. Replace the local snapshot
+        // instead of mutating the packet, while preserving the client's sprint modifier.
+        var snapshot = attribute.get();
+        var modifiers = new ArrayList<>(snapshot.modifiers());
+        modifiers.removeIf(modifier -> modifier.is(Identifier.withDefaultNamespace("sprinting")));
+        if(sprint) { modifiers.add(SPRINTING_MODIFIER); }
+        attribute.set(new ClientboundUpdateAttributesPacket.AttributeSnapshot(snapshot.attribute(), snapshot.base(), modifiers));
 
 
     }
