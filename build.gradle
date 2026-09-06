@@ -22,12 +22,22 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"clientsprint" {
+		"clientmovement" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
 	}
 
+}
+
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "clientmovement-test"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
 }
 
 dependencies {
