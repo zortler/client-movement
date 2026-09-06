@@ -3,6 +3,7 @@ package ch.zorty.mixin.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -17,13 +18,14 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Mixin(ClientPacketListener.class)
 public class AttributeMixin {
 
     @Unique
-    private final AttributeModifier SPRINTING_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("sprinting"), 0.3F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+    private final Identifier SPRINT_ID = Identifier.withDefaultNamespace("sprinting");
 
     @Inject(
             method = "handleUpdateAttributes(Lnet/minecraft/network/protocol/game/ClientboundUpdateAttributesPacket;)V",
@@ -43,13 +45,18 @@ public class AttributeMixin {
         if (entity != mc.player) return;
         if (instance.getAttribute() != Attributes.MOVEMENT_SPEED) return;
 
-        boolean sprint = instance.hasModifier(Identifier.withDefaultNamespace("sprinting"));
+        boolean sprint = instance.hasModifier(SPRINT_ID);
         // Integrated-server packets can contain immutable modifiers. Replace the local snapshot
         // instead of mutating the packet, while preserving the client's sprint modifier.
-        var snapshot = attribute.get();
-        var modifiers = new ArrayList<>(snapshot.modifiers());
-        modifiers.removeIf(modifier -> modifier.is(Identifier.withDefaultNamespace("sprinting")));
-        if(sprint) { modifiers.add(SPRINTING_MODIFIER); }
+        AttributeSnapshot snapshot = attribute.get();
+        List<AttributeModifier> modifiers = new ArrayList<>(snapshot.modifiers());
+        // Use the already existing client side sprinting modifier instead of the vanilla client one to stop this mod
+        // from acting like an 1e-8 speedhack on certain server implementations (looking at you minestom)
+        if (!sprint) {
+            modifiers.removeIf(modifier -> modifier.is(SPRINT_ID));
+        } else if (modifiers.stream().noneMatch(modifier -> modifier.is(SPRINT_ID))) {
+            modifiers.add(instance.getModifier(SPRINT_ID));
+        }
         attribute.set(new ClientboundUpdateAttributesPacket.AttributeSnapshot(snapshot.attribute(), snapshot.base(), modifiers));
 
 
